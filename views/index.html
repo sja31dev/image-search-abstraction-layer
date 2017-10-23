@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>Backend Challenges | Free Code Camp</title>
+    <link rel="shortcut icon" href="https://cdn.hyperdev.com/us-east-1%3A52a203ff-088b-420f-81be-45bf559d01b1%2Ffavicon.ico" type="image/x-icon"/>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
+    <link href="/public/style.css" rel="stylesheet" type="text/css">
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>image-search-abstraction-layer</h1>
+      <h3>Part 4 of Free Code Camp Backend Challenges</h3>
+      <ol>
+        <li>User Story: I can get the image URLs, alt text and page urls for a set of images relating to a given search string.</li>
+        <li>User Story: I can paginate through the responses by adding a ?offset=2 parameter to the URL.</li>
+        <li>User Story: I can get a list of the most recently submitted search strings.</li>
+      </ol>
+      
+      <h3>Example use</h3>
+      <ul>
+        <li><code>https://&lt;host&gt;/api/imagesearch/&lt;query string&gt;?offset=&lt;offset&gt;</code></li>
+      </ul>
+      <h3>Example response</h3>
+      <ul>
+        <li><code><pre>
+[
+  {
+    "url": "http://i0.kym-cdn.com/photos/images/facebook/000/024/740/lolcats-funny-pictures-halp-not-for-sale.jpg",
+    "snippet": "Image - 24740] | LOLcats | Know Your Meme",
+    "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwAVlPDkEfE65WZ-UmL7KxfK0sC9jCjwnujwvTDleqQ_BrB93WAT2m2fyQ",
+    "context": "http://knowyourmeme.com/photos/24740-lolcats"
+  },
+...
+]</pre></code></li>
+      </ul>
+      
+      <h3>Example use</h3>
+      <ul>
+        <li><code>https://&lt;host&gt;/api/latest/imagesearch/</code></li>
+      </ul>
+      <h3>Example response</h3>
+      <ul>
+        <li><code><pre>
+[
+  {
+    "term": "lolcats funny",
+    "when": "2017-10-23T19:15:43.269Z"
+  },
+...
+]</pre></code></li>
+      </ul>
+      
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="/public/client.js"></script>
+  </body>
+
+</html>

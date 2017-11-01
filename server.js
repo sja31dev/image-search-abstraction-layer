@@ -1,64 +1,22 @@
-var fs = require('fs');
 var express = require('express');
 var app = express();
 var GoogleImages = require('google-images');
 var client = new GoogleImages(process.env.SEI, process.env.API_KEY);
-var mongo = require('mongodb').MongoClient;
 
-//var MONGODB = 'mongodb://' + process.env.DBUSER + ':' + process.env.DBPWD + '@' + process.env.DBSERVER + ':' + process.env.DBPORT + '/' + process.env.DBNAME;
-var collection;
-// The next short url value to use.
-// If this is 0 it hasn't been initialised and the
-// database connection isn't ready to use
-var nextShortUrl = 0;
+// Store the history locally.
+// No persistance but is limited to 10 below so wont leak either.
+// Could be implemented using a DB of some sort.
+var history = [];
 
-// !!! Change some of this to work with promises w=rather than chaining callbacks
-
-/*function dbConnect() {
-  mongo.connect(MONGODB, (err, db) => {
-    if (err) {
-      throw err; // Should be handled better
-    }
-    collection = db.collection(process.env.DBCOLLECTION);
-    collection.ensureIndex("short_url", {unique: true}, function(err, name) {
-      if (err) {
-        throw err;
-      }
-      collection.count({}, function(err, count) {
-        if (err) {
-          throw err;
-        }
-        console.log(count + " documents found in database");
-        if (count === 0) {
-          nextShortUrl = count + 1;
-          console.log("DB entries NOT found. Next short_url: " + nextShortUrl);
-        } else { 
-          var options = { "sort": [['short_url','desc']] }
-          var a = collection.findOne({}, options, function(err, doc) {
-            if (err) {
-              throw err;
-            }
-            nextShortUrl = doc.short_url + 1;
-            console.log("DB entries found. Next short_url: " + nextShortUrl);
-          });
-        }
-      });
-    });
-  });
-}
-
-dbConnect();*/
-
-app.get('/api/mediasearch/:search', function(req, res) {
+app.get('/api/imagesearch/:search', function(req, res) {
   try {
     var offset = req.query.offset || 1;
     if (offset < 1) {
       offset = 1;
     }
-    console.log('"' + req.params.search + '" offset: ' + offset);
+    //console.log('"' + req.params.search + '" offset: ' + offset);
     client.search(req.params.search, {page: offset})
       .then(images => {
-      console.log(images.length);
       var ans = [];
       for (var i = 0; i < images.length; i++) {
         var img = {
@@ -70,6 +28,19 @@ app.get('/api/mediasearch/:search', function(req, res) {
         ans.push(img);
       }
       res.json(ans);
+      
+      // unshift the query onto the front of the history
+      var now = new Date();
+      var new_history = {
+        term: req.params.search,
+        when: now.toISOString()
+      };
+      history.unshift(new_history);
+      
+      // pop the oldest query off the end of the history if there are less than 10
+      if (history.length > 10) {
+        history.pop();
+      }
     });
     //res.send(req.params.search + " " + req.query.offset);
   } catch (e) {
@@ -80,28 +51,10 @@ app.get('/api/mediasearch/:search', function(req, res) {
   
 app.get('/api/latest/imagesearch/', function(req, res) {
   try {
-    var short_url_id = parseInt(req.params.short_url_id + '');
-    if (collection) {
-      collection.find({short_url : short_url_id})
-        .toArray((err, docs) => {
-        if (err) {
-          throw err;
-        } 
-        if (docs.length > 0) {
-          res.redirect(docs[0].url);
-        } else {
-          res.json({
-            error: "URL not found in the database"
-          });
-        }
-      });
-    } else {
-      res.json({
-        error: "No database connection"
-      })
-    }
-    
+    // Send the history
+    res.json(history);
   } catch (e) {
+    // This could be more user friendly
     res.sendStatus(500);
   }
 });
